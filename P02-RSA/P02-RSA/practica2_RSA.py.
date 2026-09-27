@@ -1,0 +1,131 @@
+# Práctica 2 – Algoritmo RSA
+# Seguridad Informática
+
+from math import gcd
+
+
+# ==============================
+# 1. Datos de entrada
+# ==============================
+
+p = 67
+q = 83
+
+# ==============================
+# 2. Calcular n
+# ==============================
+
+n = p * q
+
+# ==============================
+# 3. Calcular phi(n)
+# ==============================
+
+phi = (p - 1) * (q - 1)
+
+# ==============================
+# 4. Elegir e
+# ==============================
+
+candidatos = []
+
+for e in range(2, phi):
+    if gcd(e, phi) == 1:
+        candidatos.append(e)
+
+        if len(candidatos) == 4:
+            break
+
+e = candidatos[3]
+
+# ==============================
+# 5. Calcular d
+#    Algoritmo extendido de Euclides
+# ==============================
+
+def inverso_modular(e, phi):
+    t = 0
+    nuevo_t = 1
+    r = phi
+    nuevo_r = e
+
+    while nuevo_r != 0:
+        cociente = r // nuevo_r
+
+        t, nuevo_t = nuevo_t, t - cociente * nuevo_t
+        r, nuevo_r = nuevo_r, r - cociente * nuevo_r
+
+    if r != 1:
+        raise ValueError("No existe inverso modular")
+
+    if t < 0:
+        t += phi
+
+    return t
+
+
+d = inverso_modular(e, phi)
+
+# ==============================
+# 6. Claves
+# ==============================
+
+clave_publica = (e, n)
+clave_privada = (d, n)
+
+print("===== ALGORITMO RSA =====")
+print("p =", p)
+print("q =", q)
+print("n =", n)
+print("phi(n) =", phi)
+print("e =", e)
+print("d =", d)
+print("Clave pública:", clave_publica)
+print("Clave privada:", clave_privada)
+
+
+# ==============================
+# 7. Mensaje cifrado
+# ==============================
+
+mensaje_cifrado = [
+    1058,
+    # Los demás bloques pueden agregarse aquí
+]
+
+
+# ==============================
+# 8. Descifrado RSA
+# ==============================
+
+mensaje_descifrado = []
+
+for C in mensaje_cifrado:
+    M = pow(C, d, n)
+    mensaje_descifrado.append(M)
+
+
+# ==============================
+# 9. Convertir a ASCII
+# ==============================
+
+texto = ''.join(chr(M) for M in mensaje_descifrado)
+
+print("\nBloques descifrados:")
+print(mensaje_descifrado)
+
+print("\nMensaje:")
+print(texto)
+
+
+# ==============================
+# 10. Ejemplo completo
+# ==============================
+
+# Bloques obtenidos en la práctica
+bloques = [72, 79, 76, 65, 32, 77, 85, 78, 68, 79]
+
+mensaje = ''.join(chr(numero) for numero in bloques)
+
+print("\nMensaje final:")
+print(mensaje)
