@@ -23,15 +23,19 @@ db.serialize(() => {
 });
 
 
-app.post("/login-vulnerable", (req, res) => { 
+app.post("/login-vulnerable", (req, res) => {
   const { username, password } = req.body;
 
+  // Consulta parametrizada: los placeholders "?" aseguran que username y
+  // password siempre se traten como VALORES de datos, nunca como parte
+  // del texto SQL. El motor (sqlite3) los sustituye de forma segura,
+  // por lo que comillas, "--", "OR 1=1", etc. dejan de tener efecto
+  // sobre la estructura de la consulta.
+  const query = "SELECT * FROM users WHERE username = ? AND password = ?";
 
-  const query = `SELECT * FROM users WHERE username = '${username}' AND password = '${password}'`;
+  console.log("Query ejecutada:", query, "| Parametros:", [username, password]);
 
-  console.log("Query ejecutada:", query); 
-
-  db.get(query, (err, row) => {
+  db.get(query, [username, password], (err, row) => {
     if (err) return res.status(500).json({ error: err.message });
     if (row) return res.json({ ok: true, user: row.username });
     res.status(401).json({ ok: false, message: "Credenciales inválidas" });
